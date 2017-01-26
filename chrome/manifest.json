@@ -1,0 +1,21 @@
+{
+    "manifest_version": 2,
+
+    "name": "Double it!",
+    "description": "Prepare meals for the number of people you want by multiplying or dividing the ingredient quantities of recipes you find on the web.",
+    "version": "1.0",
+
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+
+    "browser_action": {
+        "default_title": "Select the list of ingredients.",
+        "default_icon": "icon.png"
+    },
+
+    "permissions": ["activeTab", "http://*/*", "https://*/*"],
+
+    "web_accessible_resources": ["main.css"]
+}
