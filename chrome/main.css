@@ -1,4 +1,3 @@
 .ingredient-list-selector {
-    /* IDEA: set the background color to the before/after pseudo-element and give it a border-radius. */
-    background-color: rgba(0, 0, 128, .3) !important;
+    background-color: rgba(231, 76, 60, .5);
 }

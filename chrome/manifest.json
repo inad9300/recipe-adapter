@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
 
-    "name": "Double it!",
+    "name": "Recipe adapter",
     "description": "Prepare meals for the number of people you want by multiplying or dividing the ingredient quantities of recipes you find on the web.",
     "version": "1.0",
 
@@ -11,7 +11,7 @@
     },
 
     "browser_action": {
-        "default_title": "Select the list of ingredients.",
+        "default_title": "Click and select the list of all the ingredients; then you will be able to modify their quantities.",
         "default_icon": "icon.png"
     },
 

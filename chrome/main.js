@@ -1,7 +1,5 @@
 /**
  * Main program.
- * 
- * FIXME: new listeners are set up every time the user clicks the extension icon.
  */
 (function () {
     setup_elem_picker()
@@ -15,15 +13,15 @@ function setup_elem_picker() {
     let last_hovered_elem
     let elem_was_selected = false
 
-    document.body.addEventListener('mouseover', event => {
+    on(document.body, 'mouseover', event => {
         last_hovered_elem = event.target
 
         if (!elem_was_selected) event.target.classList.add('ingredient-list-selector')
     })
 
-    document.body.addEventListener('mouseout', event => remove_bg(event.target))
+    on(document.body, 'mouseout', event => remove_bg(event.target))
 
-    document.body.addEventListener('click', event => {
+    on(document.body, 'click', event => {
         if (!elem_was_selected) {
             remove_bg(last_hovered_elem)
             replace_quantities_with_inputs(last_hovered_elem)
@@ -37,14 +35,25 @@ function setup_elem_picker() {
 }
 
 /**
+ * Shortcut for listening events on HTML elements.
+ */
+function on(elem, event, fn) {
+    elem.addEventListener(event, fn)
+}
+
+/**
  * Replace digits found withing the given element with input boxes.
+ * 
+ * FIXME: some numbers are not being properly replaced.
  */
 function replace_quantities_with_inputs(elem) {
-    replace_text(elem, /\d+|[1-9]\/[2-9]|¼|½|¾/, (node, match) => {
+    replace_text(elem, /[1-9]\/[2-9]|\d+|¼|½|¾/g, (node, match) => {
+        const numeric_value = get_numeric_value(match)
+
         const span = document.createElement('span')
-        span.textContent = match
+        span.textContent = numeric_value
         span.setAttribute('class', 'ingredient-input')
-        span.setAttribute('data-initial-value', get_numeric_value(match))
+        span.setAttribute('data-initial-value', numeric_value)
         span.setAttribute('contenteditable', 'true')
 
         node.parentNode.insertBefore(span, node.nextSibling)
@@ -96,7 +105,7 @@ function replace_text(node, regex, callback) {
  * Listen to changes on the input boxes and propagate them proportionally.
  */
 function listen_and_propagate_input_changes() {
-    document.body.addEventListener('keyup', event => {
+    on(document.body, 'keyup', event => {
         if (!event.target.classList.contains('ingredient-input')) return
 
         const ingredient_inputs = document.getElementsByClassName('ingredient-input')
@@ -156,6 +165,7 @@ function listen_and_propagate_input_changes() {
 
         function transform_number_to_fraction(number, divisors) {
             // For every divisor, check dividends from 1 to the divisor minus one, and see if that produces the number.
+            // TODO: find a better way to do this.
             for (let i = 0; i < divisors.length; ++i)
                 for (let j = 1; j < divisors[i]; ++j)
                     if (j / divisors[i] === number) return j + '/' + divisors[i]
