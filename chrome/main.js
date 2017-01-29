@@ -45,7 +45,7 @@ function on(elem, event, fn) {
  * Replace digits found within the given element with input boxes.
  */
 function replace_quantities_with_inputs(elem) {
-    const regex = /[1-9]\/[2-9]|\d+|¼|½|¾|half/g
+    const regex = /[1-9]\/[2-9]|\d+|¼|⅓|½|¾|half/g
     const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT)
 
     while (walker.nextNode()) {
@@ -68,6 +68,7 @@ function replace_quantities_with_inputs(elem) {
 
     function get_numeric_value(value) {
         if (value === '¼') return '1/4'
+        if (value === '⅓') return '1/3'
         else if (value === '½' || value === 'half') return '1/2'
         else if (value === '¾') return '3/4'
         else return value
