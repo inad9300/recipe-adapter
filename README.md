@@ -6,11 +6,11 @@ Once you have installed the extension on your browser, click on its icon to star
 
 As an example (from [veganricha.com](http://www.veganricha.com/)), the selection process will look like this:
 
-[[images/ingredient-selection.png|alt=recipe adapter ingredient selection example]]
+![recipe adapter ingredient selection example](images/ingredient-selection.png)
 
 After duplicating the quantities of the ingredients (by multiplying by 2 the first ingredient on the list, for example), you will see something like this:
 
-[[images/ingredient-modification.png|alt=recipe adapter ingredient modification example]]
+![recipe adapter ingredient modification example](images/ingredient-modification.png)
 
 ## Supported browsers
 The following browsers are currently supported:
