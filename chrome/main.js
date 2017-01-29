@@ -42,63 +42,36 @@ function on(elem, event, fn) {
 }
 
 /**
- * Replace digits found withing the given element with input boxes.
- * 
- * FIXME: some numbers are not being properly replaced.
+ * Replace digits found within the given element with input boxes.
  */
 function replace_quantities_with_inputs(elem) {
-    replace_text(elem, /[1-9]\/[2-9]|\d+|¼|½|¾/g, (node, match) => {
-        const numeric_value = get_numeric_value(match)
+    const regex = /[1-9]\/[2-9]|\d+|¼|½|¾|half/g
+    const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT)
 
-        const span = document.createElement('span')
-        span.textContent = numeric_value
-        span.setAttribute('class', 'ingredient-input')
-        span.setAttribute('data-initial-value', numeric_value)
-        span.setAttribute('contenteditable', 'true')
+    while (walker.nextNode()) {
+        let match
+        while ((match = regex.exec(walker.currentNode.nodeValue))) {
+            const value = get_numeric_value(match[0])
 
-        node.parentNode.insertBefore(span, node.nextSibling)
-    })
+            const span = document.createElement('span')
+            span.textContent = value
+            span.setAttribute('class', 'ingredient-input')
+            span.setAttribute('data-initial-value', value)
+            span.setAttribute('contenteditable', 'true')
+
+            const second_node = walker.currentNode.splitText(match.index)
+            second_node.nodeValue = second_node.nodeValue.substr(match[0].length) // Remove the original matched string.
+            walker.currentNode.parentNode.insertBefore(span, second_node)
+            walker.nextNode() // Skip the newly created node.
+        }
+    }
 
     function get_numeric_value(value) {
         if (value === '¼') return '1/4'
-        else if (value === '½') return '1/2'
+        else if (value === '½' || value === 'half') return '1/2'
         else if (value === '¾') return '3/4'
         else return value
     }
-}
-
-/**
- * From http://blog.alexanderdickson.com/javascript-replacing-text
- */
-function replace_text(node, regex, callback) {
-    const node_type = {elem: 1, attr: 2, text: 3, comment: 8}
-    const exclude_elems = ['script', 'style', 'iframe', 'canvas']
-
-    let child = node.firstChild
-   
-    do {
-        switch (child.nodeType) {
-        case node_type.elem:
-            if (exclude_elems.indexOf(child.tagName.toLowerCase()) > -1) continue
-
-            replace_text(child, regex, callback)
-            break
-
-        case node_type.text:
-           child.data.replace(regex, function (all) {
-                const args = [].slice.call(arguments)
-                const offset = args[args.length - 2]
-                const next_text_node = child.splitText(offset)
-
-                next_text_node.data = next_text_node.data.substr(all.length)
-                callback.apply(window, [child].concat(args))
-                child = next_text_node
-            })
-            break
-        }
-    } while (child = child.nextSibling)
-
-    return node
 }
 
 /**
@@ -108,69 +81,69 @@ function listen_and_propagate_input_changes() {
     on(document.body, 'keyup', event => {
         if (!event.target.classList.contains('ingredient-input')) return
 
-        const ingredient_inputs = document.getElementsByClassName('ingredient-input')
-
         const initial_value = parse_number(event.target.getAttribute('data-initial-value'))
         const current_value = parse_number(event.target.textContent)
         const ratio = current_value / initial_value
 
+        const ingredient_inputs = document.getElementsByClassName('ingredient-input')
+
         for (let i = 0; i < ingredient_inputs.length; i++)
             if (ingredient_inputs[i] !== event.target)
-                ingredient_inputs[i].textContent = get_new_value(ingredient_inputs[i])
-
-        function parse_number(str) {
-            if (/[1-9]\/[2-9]/.test(str)) {
-                const [first_digit, second_digit] = str.split('/')
-                return parseInt(first_digit) / parseInt(second_digit)
-            }
-            return parseInt(str.replace(/[^0-9\.]/g, ''))
-        }
-
-        function get_new_value(input) {
-            const measuring_spoons = [{
-                names: ['tablespoon', 'tablespoons', 'tbsp'],
-                divisors: [2]
-            }, {
-                names: ['cup', 'cups'],
-                divisors: [2, 3, 4]
-            }, {
-                names: ['teaspoon', 'teaspoon', 'tsp'],
-                divisors: [2, 4, 6, 8]
-            }]
-
-            const initial_value = input.getAttribute('data-initial-value')
-            const new_value = ratio * parse_number(initial_value)
-
-            // For some units, if the value has decimals, it makes more sense to return a fraction.
-            // TODO: if the original unit is a fraction... e.g. 1/2 a lemon.
-            if (new_value % 1 !== 0) {
-                const parent_text = input.parentNode.textContent
-
-                spoons_loop:
-                for (let i = 0; i < measuring_spoons.length; ++i) {
-                    const spoon = measuring_spoons[i]
-
-                    for (let j = 0; j < spoon.names.length; ++j)
-                        if (parent_text.indexOf(' ' + spoon.names[j]) > -1) {
-                            const fraction = '' + transform_number_to_fraction(new_value, spoon.divisors)
-                            if (fraction.indexOf('/') > 0) return fraction
-                            else break spoons_loop
-                        }
-                }
-            }
-
-            const new_value_fixed = new_value.toFixed(1)
-            return new_value_fixed.endsWith('.0') ? new_value_fixed.slice(0, -2) : new_value_fixed
-        }
-
-        function transform_number_to_fraction(number, divisors) {
-            // For every divisor, check dividends from 1 to the divisor minus one, and see if that produces the number.
-            // TODO: find a better way to do this.
-            for (let i = 0; i < divisors.length; ++i)
-                for (let j = 1; j < divisors[i]; ++j)
-                    if (j / divisors[i] === number) return j + '/' + divisors[i]
-
-            return number
-        }
+                ingredient_inputs[i].textContent = get_new_value(ingredient_inputs[i], ratio)
     })
+
+    function parse_number(str) {
+        return /[1-9]\/[2-9]/.test(str)
+            ? str_fraction_to_float(str)
+            : parseFloat(str.replace(/[^0-9\.]/g, ''))
+    }
+
+    function str_fraction_to_float(str) {
+        const [first_digit, second_digit] = str.split('/')
+        return parseInt(first_digit) / parseInt(second_digit)
+    }
+
+    function get_new_value(input, ratio) {
+        const initial_value = input.getAttribute('data-initial-value')
+        const new_value = ratio * parse_number(initial_value)
+        const new_value_has_decimals = new_value % 1 !== 0
+
+        // If the original value was a fraction or the ingredient is expressed in certain units, we return a fraction.
+        if (new_value_has_decimals && (contains_measuring_spoon(input.parentNode.textContent) || /[1-9]\/[2-9]/.test(initial_value))) {
+            const fraction_or_number = get_fraction_or_number(new_value)
+            if (/[1-9]\/[2-9]/.test(fraction_or_number)) return fraction_or_number
+        }
+
+        const new_value_fixed = new_value.toFixed(1)
+        return new_value_fixed.endsWith('.0') ? new_value_fixed.slice(0, -2) : new_value_fixed
+    }
+
+    function contains_measuring_spoon(text) {
+        const measuring_spoons = ['tablespoon', 'tablespoons', 'tbsp', 'cup', 'cups', 'teaspoon', 'teaspoon', 'tsp']
+
+        for (let i = 0; i < measuring_spoons.length; ++i)
+            if (text.indexOf(' ' + measuring_spoons[i]) > -1) return true
+        
+        return false
+    }
+
+    function get_fraction_or_number(number) {
+        const sensible_fractions_str = [
+            '1/2',
+            '1/3', '2/3',
+            '1/4', '2/4', '3/4',
+            '1/5', '2/5', '3/5', '4/5',
+            '1/6', '2/6', '3/6', '4/6', '5/6',
+            '1/7', '2/7', '3/7', '4/7', '5/7', '6/7',
+            '1/8', '2/8', '3/8', '4/8', '5/8', '6/8', '7/8',
+            '1/9', '2/9', '3/9', '4/9', '5/9', '6/9', '7/9', '8/9',
+            '1/10','2/10','3/10','4/10','5/10','6/10','7/10','8/10','9/10'
+        ]
+        const sensible_fractions_num = sensible_fractions_str.map(str_fraction_to_float)
+
+        for (let i = 0; i < sensible_fractions_num.length; ++i)
+            if (number === sensible_fractions_num[i]) return sensible_fractions_str[i]
+        
+        return number
+    }
 }
