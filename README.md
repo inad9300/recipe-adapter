@@ -14,4 +14,4 @@ After duplicating the quantities of the ingredients (by multiplying by 2 the fir
 
 ## Supported browsers
 The following browsers are currently supported:
-- Chrome
+- Chrome – [open in Web Store](https://chrome.google.com/webstore/detail/recipe-adapter/milammgjlcmebbiiikmbfjjlcjepdilg).
