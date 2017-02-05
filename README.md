@@ -15,7 +15,7 @@ After duplicating the quantities of the ingredients (by multiplying by 2 the fir
 ## Supported browsers
 The following browsers are currently supported:
 - Chrome and Chromium – [open in Web Store](https://chrome.google.com/webstore/detail/recipe-adapter/milammgjlcmebbiiikmbfjjlcjepdilg/).
-- Firefox - [open in Add-ons browser](https://addons.mozilla.org/en-US/firefox/addon/recipe-adapter/).
-- Opera - coming soon.
+- Firefox – [open in Add-ons browser](https://addons.mozilla.org/en-US/firefox/addon/recipe-adapter/).
+- Opera – coming soon.
 
 Initially, the extension was targeted at the Chrome and Chromium browsers. Consequently, the extension's code is stored in the [chrome](chrome) directory. Fortunately, Firefox and Opera support of Chrome's APIs is very decent, and not a single modification was needed in order for the extension to be ported into those browsers. That's why no specific directories exist for them.
