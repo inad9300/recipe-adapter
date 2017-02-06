@@ -68,7 +68,7 @@ function replace_quantities_with_inputs(elem) {
 
     function get_numeric_value(value) {
         if (value === '¼') return '1/4'
-        if (value === '⅓') return '1/3'
+        else if (value === '⅓') return '1/3'
         else if (value === '½' || value === 'half') return '1/2'
         else if (value === '¾') return '3/4'
         else return value
