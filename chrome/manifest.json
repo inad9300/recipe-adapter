@@ -1,13 +1,13 @@
 {
     "manifest_version": 2,
 
-    "name": "Recipe adapter",
+    "name": "__MSG_app_title__",
     "version": "1.1",
-    "description": "Prepare meals for the number of people you want by multiplying or dividing the ingredient quantities of recipes you find on the web.",
+    "description": "__MSG_app_desc__",
     "default_locale": "en",
 
     "browser_action": {
-        "default_title": "Recipe adapter",
+        "default_title": "__MSG_app_title__",
         "default_icon": "icon/16.png"
     },
 
