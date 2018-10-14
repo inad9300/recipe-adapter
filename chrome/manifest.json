@@ -2,7 +2,7 @@
     "manifest_version": 2,
 
     "name": "Recipe adapter",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Prepare meals for the number of people you want by multiplying or dividing the ingredient quantities of recipes you find on the web.",
 
     "browser_action": {
