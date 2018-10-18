@@ -14,6 +14,6 @@ While looking at a recipe in your favorite blog...
 
 As an example (from [veganricha.com](https://www.veganricha.com/)), the process will look something like this:
 
-<img src="images/examples/ingredient-selection.png" width="400" alt="Recipe adapter ingredient selection example">
-<img src="images/examples/ingredient-modification.png" width="400" alt="Recipe adapter ingredient modification example">
+<img src="images/examples/ingredient-selection-1.1.png" width="400" alt="Recipe adapter ingredient selection example">
+<img src="images/examples/ingredient-modification-1.1.png" width="400" alt="Recipe adapter ingredient modification example">
 
