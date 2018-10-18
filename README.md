@@ -7,7 +7,7 @@ The following browsers are currently supported:
 - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/recipe-adapter/)
 - [Opera](https://addons.opera.com/en/extensions/details/recipe-adapter/)
 
-Initially, the extension was targeted at the Chrome and Chromium browsers. Consequently, the extension's code is stored in the [chrome](chrome) directory. Fortunately, Firefox and Opera support of Chrome's APIs is very decent, and not a single modification was needed in order for the extension to be ported into those browsers. That's why no specific directories exist for them.
+Initially, the extension was targeted at the Chrome and Chromium browsers. Consequently, the extension's code is stored in the [`chrome`](chrome) directory. Fortunately, Firefox and Opera support of Chrome's APIs is very decent, and not a single modification was needed in order for the extension to be ported into those browsers. That's why no specific directories exist for them.
 
 ## How it works
 Once you have installed the extension on your browser, click on its icon to start using the tool. The cursor will be now a selector: just hover the mouse over the page and pick the proper box so that it contains the list of ingredients. If you cannot fit all the ingredients in one go, just click on the extension's icon again and pick another box. Once you have done this, you will be able to freely modify the ingredient quantities to adjust them to your needs.
