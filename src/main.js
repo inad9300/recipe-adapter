@@ -51,7 +51,7 @@ function make_all_quantities_editable(elem) {
 
     while (walker.nextNode()) {
         let match
-        while ((match = qty_regexp.exec(walker.currentNode.nodeValue))) {
+        while ((match = best_qty_match(walker.currentNode.nodeValue))) {
             const original_val = match[0]
             const val_num = str_to_num(original_val)
             if (isNaN(val_num) || !isFinite(val_num)) {
@@ -140,22 +140,43 @@ function get_original_val_num(input) {
 }
 
 /**
- * By group (separated by "|"), this regular expression matches strings of the form:
+ * Examples of strings matched by these regular expressions:
  *   1. "½", "1½", "1 ½"
  *   2. "1/2", "1 / 2", "1 1/2", "1 1 / 2"
- *   3. "1", "1.2"
- *   4. "Half", "half"
+ *   3. "1", "1.2", "1,000"
+ *   4. "1", "1,2", "1.000"
+ *   5. "Half", "half"
+ *
+ * The meanings of "." and "," are guessed automatically with the assumption
+ * that at most 2 decimal places are used.
  */
-const qty_regexp = /([1-9]\d*\s*)?(½|⅓|⅔|¼|¾|⅕|⅖|⅗|⅘|⅙|⅚|⅐|⅛|⅜|⅝|⅞|⅑|⅒)|([1-9]\d*\s+)?[1-9]\d*\s*\/\s*[1-9]\d*|[1-9]\d*(\.\d+)?|\b[Hh]alf\b/
+const qty_regexps = [
+    /([1-9]\d*\s?)?(½|⅓|⅔|¼|¾|⅕|⅖|⅗|⅘|⅙|⅚|⅐|⅛|⅜|⅝|⅞|⅑|⅒)/,
+    /([1-9]\d*\s)?[1-9]\d*\s?\/\s?[1-9]\d*/,
+    /[1-9](\d|,\d{3})*(\.\d{1,2})?/,
+    /[1-9](\d|\.\d{3})*(,\d{1,2})?/,
+    /[Hh]alf/
+]
+
+function best_qty_match(str) {
+    let best
+    for (const r of qty_regexps) {
+        const match = r.exec(str)
+        if (match && match[0].length > best.length) {
+            best = match
+        }
+    }
+    return best
+}
 
 /**
  * Get a numeric value usable in computations out of the given string.
  */
 function str_to_num(str) {
-    // Remove traling non-digits, to cover the case when the user is still typing.
-    str = str.replace(/[./a-zA-Z\s]+$/, '')
+    // Remove trailing non-digits, to cover the case when the user is still typing.
+    str = str.replace(/[.,/a-zA-Z\s]+$/, '')
 
-    if (!str || !qty_regexp.test(str)) {
+    if (!str || !best_qty_match(str)) {
         return
     }
 
@@ -180,10 +201,11 @@ function str_to_num(str) {
         .replace('⅑', '+1/9')
         .replace('⅒', '+1/10')
         .replace(/(\d+)\s+(\d+)\s*\/\s*(\d+)/, '$1+$2/$3')
-        .replace(/\s+/g, '')
+        .replace(/[.,]([0-9]{3})/g, '$1')
+        .replace(',', '.')
         .replace(/[Hh]alf/, '1/2')
 
-    // Only what fits the restricted regular expression is evaluated.
+    // Only what fits one of the restricted regular expressions is evaluated.
     return eval(str)
 }
 
