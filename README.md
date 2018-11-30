@@ -1,6 +1,10 @@
 # Recipe adapter
 A browser extension that lets you modify intredient quantities of recipes you find on the web, proportionally, to adjust them to any number of people.
 
+Please, feel free to support my work with a small contribution... 🙂
+
+<a href="https://www.buymeacoffee.com/wu6S9Ob0k" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
 ## Supported browsers
 - [Chrome and Chromium](https://chrome.google.com/webstore/detail/recipe-adapter/milammgjlcmebbiiikmbfjjlcjepdilg/)
 - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/recipe-adapter/)
