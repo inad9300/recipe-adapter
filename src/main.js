@@ -52,23 +52,22 @@ function make_all_quantities_editable(elem) {
     while (walker.nextNode()) {
         let match
         while ((match = best_qty_match(walker.currentNode.nodeValue))) {
-            const original_val = match[0]
-            const val_num = str_to_num(original_val)
+            const val_num = str_to_num(match)
             if (isNaN(val_num) || !isFinite(val_num)) {
                 return
             }
 
             const span = document.createElement('span')
-            span.textContent = original_val
+            span.textContent = match
             span.classList.add('ra-ingredient-input')
             span.setAttribute('contenteditable', 'true')
-            span.setAttribute('title', 'Original value: ' + original_val)
+            span.setAttribute('title', 'Original value: ' + match)
             span.setAttribute('data-ra-original-val-num', val_num)
-            span.setAttribute('data-ra-original-val-was-fraction', '' + /½|⅓|⅔|¼|¾|⅕|⅖|⅗|⅘|⅙|⅚|⅐|⅛|⅜|⅝|⅞|⅑|⅒|\//.test(original_val))
+            span.setAttribute('data-ra-original-val-was-fraction', '' + /½|⅓|⅔|¼|¾|⅕|⅖|⅗|⅘|⅙|⅚|⅐|⅛|⅜|⅝|⅞|⅑|⅒|\/|[Hh]alf/.test(match))
 
             // Remove the original string and insert the new editable element.
             const second_node = walker.currentNode.splitText(match.index)
-            second_node.nodeValue = second_node.nodeValue.substr(original_val.length)
+            second_node.nodeValue = second_node.nodeValue.substr(match.length)
             walker.currentNode.parentNode.insertBefore(span, second_node)
 
             if (first) {
@@ -124,7 +123,7 @@ function unit_is_measuring_spoon(input) {
         ? parent.parentNode.textContent
         : parent.textContent
 
-    const measuring_spoon_regexps = ['tablespoon', 'tbsp', 'cup', 'teaspoon', 'tsp']
+    const measuring_spoon_regexps = ['teaspoon', 'tsp', 'tablespoon', 'tbsp', 'cup']
         .map(spoon => new RegExp('\\b' + spoon + 's?\\b', 'i'))
 
     for (const regexp of measuring_spoon_regexps) {
@@ -143,12 +142,15 @@ function get_original_val_num(input) {
  * Examples of strings matched by these regular expressions:
  *   1. "½", "1½", "1 ½"
  *   2. "1/2", "1 / 2", "1 1/2", "1 1 / 2"
- *   3. "1", "1.2", "1,000"
- *   4. "1", "1,2", "1.000"
+ *   3. "1", "1.2", "1,000", "1,000.2"
+ *   4. "1", "1,2", "1.000", "1.000,2"
  *   5. "Half", "half"
  *
  * The meanings of "." and "," are guessed automatically with the assumption
  * that at most 2 decimal places are used.
+ *
+ * TODO Deal with more textual quantities, e.g. "one", "pair", "couple",
+ * "dozen"... "two halves"? "two pairs"? "half a dozen"? "half a pair"!?
  */
 const qty_regexps = [
     /([1-9]\d*\s?)?(½|⅓|⅔|¼|¾|⅕|⅖|⅗|⅘|⅙|⅚|⅐|⅛|⅜|⅝|⅞|⅑|⅒)/,
@@ -159,22 +161,22 @@ const qty_regexps = [
 ]
 
 function best_qty_match(str) {
-    let best
-    for (const r of qty_regexps) {
-        const match = r.exec(str)
-        if (match && match[0].length > best.length) {
-            best = match
-        }
-    }
-    return best
+    return qty_regexps
+        .map(regexp => regexp.exec(str))
+        .filter(match => !!match)
+        .map(match => match[0])
+        .reduce((a, b) => a.length > b.length ? a : b, '')
 }
 
 /**
  * Get a numeric value usable in computations out of the given string.
  */
 function str_to_num(str) {
-    // Remove trailing non-digits, to cover the case when the user is still typing.
-    str = str.replace(/[.,/a-zA-Z\s]+$/, '')
+    // Remove trailing non-digits, to cover the case when the user is still typing. (But
+    // deal with textual quantities before!)
+    str = str
+        .replace(/[Hh]alf/, '1/2')
+        .replace(/[.,/a-zA-Z\s]+$/, '')
 
     if (!str || !best_qty_match(str)) {
         return
@@ -203,7 +205,6 @@ function str_to_num(str) {
         .replace(/(\d+)\s+(\d+)\s*\/\s*(\d+)/, '$1+$2/$3')
         .replace(/[.,]([0-9]{3})/g, '$1')
         .replace(',', '.')
-        .replace(/[Hh]alf/, '1/2')
 
     // Only what fits one of the restricted regular expressions is evaluated.
     return eval(str)
