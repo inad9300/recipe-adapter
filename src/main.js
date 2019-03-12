@@ -248,7 +248,7 @@ function num_to_str(num, as_fraction) {
  * Check if two numbers are approximately the same, avoiding precission problems.
  */
 function ish(n, m) {
-    return Math.abs(n - m) <= 0.0000000000000001
+    return Math.abs(n - m) <= 0.00000000000001
 }
 
 /**
