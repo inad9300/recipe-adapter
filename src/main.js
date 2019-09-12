@@ -88,7 +88,7 @@ const overlay = document.createElement('div')
 overlay.style.pointerEvents = 'none'
 overlay.style.position = 'fixed'
 overlay.style.borderRadius = '1px'
-overlay.style.zIndex = '9999'
+overlay.style.zIndex = '10000'
 overlay.style.backgroundColor = 'rgba(231, 76, 60, .5)'
 overlay.style.transition = 'top .1s, left .1s, width .1s, height .1s'
 body.appendChild(overlay)
