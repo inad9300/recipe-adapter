@@ -1,6 +1,6 @@
 {
 
-// Reusable utilities.
+// Utilities.
 
 const {body} = document
 
@@ -9,33 +9,26 @@ const on = (elem, evt, fn) => {
     return () => elem.removeEventListener(evt, fn, true)
 }
 
-const select_content = editable_elem => {
-    const range = document.createRange()
-    range.selectNodeContents(editable_elem)
-    const selection = window.getSelection()
-    selection.removeAllRanges()
-    selection.addRange(range)
-}
-
 /**
  * Examples of strings matched by these regular expressions:
- *   1. "½", "1½", "1 ½"
- *   2. "1/2", "1 / 2", "1 1/2", "1 1 / 2"
- *   3. "1", "1.2", "1,000", "1,000.2"
- *   4. "1", "1,2", "1.000", "1.000,2"
- *   5. "Half", "half"
+ *   1. "½", "1½", "1 ½".
+ *   2. "1/2", "1 / 2", "1 1/2", "1 1 / 2".
+ *   3. "1", "1.2", "1,000", "1,000.2".
+ *   4. "1", "1,2", "1.000", "1.000,2".
+ *   5. "Half a dozen", "half a dozen".
  *
  * The decimal separator ("." or ",") is guessed automatically, assuming at most 2 decimal places.
- *
- * IDEA Deal with more textual quantities, e.g. "one", "pair", "couple", "dozen"...
- * "two halves"? "two pairs"? "half a dozen"? "half a pair"!?
  */
 const qty_regexps = [
     /([1-9]\d*\s?)?(½|⅓|⅔|¼|¾|⅕|⅖|⅗|⅘|⅙|⅚|⅐|⅛|⅜|⅝|⅞|⅑|⅒)/,
     /([1-9]\d*\s)?[1-9]\d*\s?\/\s?[1-9]\d*/,
     /[1-9](\d|,\d{3})*(\.\d{1,2})?/,
     /[1-9](\d|\.\d{3})*(,\d{1,2})?/,
-    /[Hh]alf/
+    /[Hh]alf [Aa] [Dd]ozen/,
+    /[Hh]alf/,
+    /[Dd]ozen/,
+    /[Pp]air/,
+    /[Cc]ouple/
 ]
 
 const qty_match = str => qty_regexps
@@ -45,9 +38,13 @@ const qty_match = str => qty_regexps
     .reduce((a, b) => a.length > b.length ? a : b, '')
 
 const parse_num = str => {
-    // Deal with textual quantities, then remove trailing non-digits, to cover the case when the user is still typing.
+    // Deal with quantifiers, then remove trailing non-digits, to cover the case when the user is still typing.
     str = str
+        .replace(/[Hh]alf [Aa] [Dd]ozen/, '6')
         .replace(/[Hh]alf/, '1/2')
+        .replace(/[Dd]ozen/, '12')
+        .replace(/[Pp]air/, '2')
+        .replace(/[Cc]ouple/, '2')
         .replace(/[.,/a-zA-Z\s]+$/, '')
 
     if (!str || !qty_match(str))
@@ -98,7 +95,7 @@ body.appendChild(overlay)
 
 let prior_target
 
-const off_mouseover = on(body, 'mousemove', ({target}) => {
+const off_mousemove = on(body, 'mousemove', ({target}) => {
     if (target === prior_target)
         return
 
@@ -118,18 +115,31 @@ const off_scroll = on(window, 'scroll', hide_overlay)
 
 // Let the user pick a DOM element, inside which all quantities will become editable.
 
-const make_all_quantities_editable = elem => {
-    elem.normalize()
+const select_content = elem => {
+    const range = document.createRange()
+    range.selectNodeContents(elem)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+}
 
-    const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT)
-    let first = true
+const off_click = on(body, 'click', evt => {
+    evt.preventDefault()
+    evt.stopPropagation()
 
+    hide_overlay()
+
+    prior_target.normalize()
+
+    const walker = document.createTreeWalker(prior_target, NodeFilter.SHOW_TEXT)
+
+    outer_loop:
     while (walker.nextNode()) {
         let match
         while ((match = qty_match(walker.currentNode.nodeValue))) {
             const val_num = parse_num(match)
             if (isNaN(val_num) || !isFinite(val_num))
-                return
+                continue outer_loop
 
             const span = document.createElement('span')
             span.textContent = match
@@ -145,27 +155,15 @@ const make_all_quantities_editable = elem => {
             second_node.nodeValue = second_node.nodeValue.substr(match.length)
             walker.currentNode.parentNode.insertBefore(span, second_node)
 
-            if (first) {
-                first = false
-                select_content(span)
-            }
-
             // Advance the walker to the node after the newly inserted element.
             walker.nextNode()
             walker.nextNode()
         }
     }
-}
 
-const off_click = on(body, 'click', evt => {
-    evt.preventDefault()
-    evt.stopPropagation()
+    select_content(prior_target.querySelector('.ra-ingredient-input'))
 
-    hide_overlay()
-
-    make_all_quantities_editable(prior_target)
-
-    off_mouseover()
+    off_mousemove()
     off_scroll()
     off_click()
 })

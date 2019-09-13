@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3
+- Added animation and round borders to element selection.
+- Fixed rounding problem causing fractions not to be shown when expected.
+- Fixed number parsing bug leading to incorrect duplicated input boxes with wrong values.
+- Added support for more quantifiers, e.g. "dozen", "couple".
+- Changed overall code structure.
+
 ## 1.2
 - Added support for different decimal and thousands separators, e.g. "1,000.2", "1.000,2".
 
