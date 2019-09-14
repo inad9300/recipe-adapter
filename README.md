@@ -16,7 +16,7 @@ While looking at a recipe in your favorite blog...
 2. Select the list of ingredients. If you cannot fit all the ingredients in one go, repeat steps 1 and 2 until all are selected.
 3. Change any of the quantities on it – all the others will adapt automatically!
 
-Tip: if the recipe mentions the number of servings, you can include it in the selection and use it to control the ingredients' amounts.
+> Tip: If the recipe mentions the number of servings, you can include it in the selection and use it to control the ingredients' amounts.
 
 As an example (from [Kristina DeMuth's blog](https://kristinademuth.com/)), the process will look something like this:
 
